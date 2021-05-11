@@ -19,7 +19,7 @@ func main() {
 		log.Fatal(err)
 	}
 	server := server.NewServer(client)
-	server.Start("5000")
+	server.Start(":5000")
 
 	//var rep = taskRep.New(client)
 	//var uuid, _ = primitive.ObjectIDFromHex("609985f86ee56ee9c5b68542")
