@@ -6,9 +6,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 	"time"
 )
-
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 	server := server.NewServer(client)
-	server.Start(":5000")
+	server.Start(":" + os.Getenv("PORT"))
 
 	//var rep = taskRep.New(client)
 	//var uuid, _ = primitive.ObjectIDFromHex("609985f86ee56ee9c5b68542")
