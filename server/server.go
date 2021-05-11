@@ -2,8 +2,11 @@ package server
 
 import (
 	"github.com/AtaskTracker/AtaskAPI/database/taskRep"
+	"github.com/AtaskTracker/AtaskAPI/database/userRepo"
 	"github.com/AtaskTracker/AtaskAPI/handlers/taskHandler"
+	"github.com/AtaskTracker/AtaskAPI/handlers/userHandler"
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
+	"github.com/AtaskTracker/AtaskAPI/services/userService"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
@@ -13,6 +16,7 @@ type server struct {
 	router *mux.Router
 	//TODO: add handlers here
 	taskHandler *taskHandler.TaskHandler
+	userHandler *userHandler.UserHandler
 }
 
 type Config struct {
@@ -36,12 +40,16 @@ func (s *server) ConfigureRouter() {
 	s.router.HandleFunc("/task", s.taskHandler.CreateTask).Methods("POST")
 	s.router.HandleFunc("/task/{id}", s.taskHandler.GetTasksByUserId).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.taskHandler.DeleteByUserId).Methods("DELETE")
+
+	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
+
 }
 
 func NewServer(mongoClient *mongo.Client) *server {
 	server := &server{
 		router:      mux.NewRouter(),
 		taskHandler: taskHandler.New(taskService.New(taskRep.New(mongoClient))),
+		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient))),
 	}
 
 	server.ConfigureRouter()
