@@ -12,13 +12,13 @@ type UserService struct {
 	userRep *userRepo.UserRepo
 }
 
+const googleClientId = "954302622465-iruk7dibdhfpl7udjtstl056kaa1sv3e.apps.googleusercontent.com"
+
 func New(rep *userRepo.UserRepo) *UserService {
 	return &UserService{userRep: rep}
 }
 
 func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
-
-	const googleClientId = "954302622465-iruk7dibdhfpl7udjtstl056kaa1sv3e.apps.googleusercontent.com"
 	err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "client_secret.json")
 	if err != nil {
 		return nil, err
@@ -34,6 +34,14 @@ func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
 	}
 
 	return &addedUser, nil
+}
+
+func (s *UserService) GetUserByEmail(email string) (*dto.User, error) {
+	user, err := s.userRep.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func mapToUserDto(payload *idtoken.Payload) *dto.User {

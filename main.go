@@ -14,13 +14,17 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
-		"mongodb+srv://dbUser:dbUserPassword@cluster0.6t1sr.mongodb.net/atasktracker?retryWrites=true&w=majority",
+		"mongodb+srv://newUser:newUserPassword@cluster0.6t1sr.mongodb.net/atasktracker?retryWrites=true&w=majority",
 	))
 	if err != nil {
 		log.Fatal(err)
 	}
 	server := server.NewServer(client)
-	server.Start(":" + os.Getenv("PORT"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	server.Start(":" + port)
 
 	//var rep = taskRep.New(client)
 	//var uuid, _ = primitive.ObjectIDFromHex("609985f86ee56ee9c5b68542")

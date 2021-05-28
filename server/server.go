@@ -43,6 +43,8 @@ func (s *server) ConfigureRouter() {
 
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
 
+	s.router.HandleFunc("/users", s.userHandler.GetUserByEmail).Methods("GET")
+
 }
 
 func NewServer(mongoClient *mongo.Client) *server {

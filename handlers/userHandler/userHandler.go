@@ -31,3 +31,21 @@ func (h *UserHandler) Login(writer http.ResponseWriter, request *http.Request) {
 	}
 	utilities.RespondJson(writer, http.StatusCreated, user)
 }
+
+func (h *UserHandler) GetUserByEmail(writer http.ResponseWriter, request *http.Request) {
+	email := request.FormValue("email")
+	if email == "" {
+		utilities.ErrorJsonRespond(writer, http.StatusBadRequest, fmt.Errorf("no necessery query param present"))
+		return
+	}
+	user, err := h.userService.GetUserByEmail(email)
+	if err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+		return
+	}
+	if user.UUID.IsZero() {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no users with given email"))
+		return
+	}
+	utilities.RespondJson(writer, http.StatusCreated, user)
+}
