@@ -67,7 +67,6 @@ func (rep *TaskRep) DeleteById(id string) error {
 	return err
 }
 
-//TODO: сделать так чтобы лейблы работали (пока они не работают ¯\_(ツ)_/¯)
 func (rep *TaskRep) AddLabel(taskId string, labelId string) error {
 	var collection = rep.mongo.Database("atasktracker").Collection("tasks")
 	var result bson.M
