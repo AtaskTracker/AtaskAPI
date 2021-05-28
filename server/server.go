@@ -37,10 +37,11 @@ func (s *server) ConfigureRouter() {
 	})
 
 	//TODO: add endpoints here
-	s.router.HandleFunc("/task", s.taskHandler.CreateTask).Methods("POST")
-	s.router.HandleFunc("/task/{id}", s.taskHandler.GetTasksByUserId).Methods("GET")
-	s.router.HandleFunc("/task/{id}", s.taskHandler.DeleteByUserId).Methods("DELETE")
+	s.router.HandleFunc("/task", s.userHandler.AuthorizationMW(s.taskHandler.CreateTask)).Methods("POST")
+	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.GetTasksByUserId)).Methods("GET")
+	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.DeleteByUserId)).Methods("DELETE")
 
+	s.router.HandleFunc("auth/logout", s.userHandler.Logout).Methods("POST")
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
 
 }

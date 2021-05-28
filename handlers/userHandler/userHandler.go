@@ -8,6 +8,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/handlers/utilities"
 	"github.com/AtaskTracker/AtaskAPI/services/userService"
 	"net/http"
+	"strings"
 )
 
 const contextKeyId = "id"
@@ -36,18 +37,31 @@ func (h *UserHandler) Login(writer http.ResponseWriter, request *http.Request) {
 	utilities.RespondJson(writer, http.StatusCreated, user)
 }
 
+func (h *UserHandler) Logout(writer http.ResponseWriter, request *http.Request) {
+	reqToken := request.Header.Get("Authorization")
+	splitToken := strings.Split(reqToken, "Bearer ")
+	reqToken = splitToken[1]
+	if err := h.userService.DeleteUserSession(&dto.Bearer{Token: reqToken}); err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+	}
+	utilities.RespondJson(writer, http.StatusOK, nil)
+}
+
 func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenCookie, err := r.Cookie(tokenCookie)
-		if err != nil {
-			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, err)
+		reqToken := r.Header.Get("Authorization")
+		splitToken := strings.Split(reqToken, "Bearer ")
+		reqToken = splitToken[1]
+
+		if reqToken == "" {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, fmt.Errorf("token not found"))
 			return
 		}
-		user, err := h.userService.Login(&dto.Bearer{Token: tokenCookie.Value})
-		if err != nil {
-			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, err)
+		userId, found := h.userService.GetUserId(&dto.Bearer{Token: reqToken})
+		if !found {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, fmt.Errorf("token not found"))
 			return
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, user.UUID)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, userId)))
 	})
 }

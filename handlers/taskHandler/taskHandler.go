@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-const contextKeyUserID = "userId"
+const contextKeyUserID = "id"
 
 type TaskHandler struct {
 	taskService *taskService.TaskService
@@ -26,8 +26,7 @@ func (h *TaskHandler) CreateTask(writer http.ResponseWriter, request *http.Reque
 		utilities.ErrorJsonRespond(writer, http.StatusBadRequest, fmt.Errorf("json decode failed"))
 		return
 	}
-	//TODO: достать id пользователя из контекста запроса (его туда должна положить мидлварь авторизации)
-	userId := "some hex uuid string" // request.Context().Value(contextKeyId).(string)
+	userId := request.Context().Value(contextKeyUserID).(string)
 
 	task, err := h.taskService.CreateTask(task, userId)
 	if err != nil {
@@ -49,6 +48,11 @@ func (h *TaskHandler) GetTasksByUserId(writer http.ResponseWriter, request *http
 
 func (h *TaskHandler) DeleteByUserId(writer http.ResponseWriter, request *http.Request) {
 	userId, _ := mux.Vars(request)["id"]
+	contextUserID := request.Context().Value(contextKeyUserID).(string)
+	if userId != contextUserID {
+		utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("no acces for this id"))
+		return
+	}
 	if err := h.taskService.DeleteById(userId); err != nil {
 		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
 		return
