@@ -1,6 +1,7 @@
 package userHandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/AtaskTracker/AtaskAPI/dto"
@@ -8,6 +9,9 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/services/userService"
 	"net/http"
 )
+
+const contextKeyId = "id"
+const tokenCookie = "accessToken"
 
 type UserHandler struct {
 	userService *userService.UserService
@@ -30,4 +34,20 @@ func (h *UserHandler) Login(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	utilities.RespondJson(writer, http.StatusCreated, user)
+}
+
+func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenCookie, err := r.Cookie(tokenCookie)
+		if err != nil {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, err)
+			return
+		}
+		user, err := h.userService.Login(&dto.Bearer{Token: tokenCookie.Value})
+		if err != nil {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, err)
+			return
+		}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, user.UUID)))
+	})
 }
