@@ -1,17 +1,21 @@
 package userHandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/AtaskTracker/AtaskAPI/dto"
 	"github.com/AtaskTracker/AtaskAPI/handlers/utilities"
 	"github.com/AtaskTracker/AtaskAPI/services/userService"
 	"net/http"
+	"strings"
 )
 
 type UserHandler struct {
 	userService *userService.UserService
 }
+
+const contextKeyId = "id"
 
 func New(userService *userService.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
@@ -48,4 +52,39 @@ func (h *UserHandler) GetUserByEmail(writer http.ResponseWriter, request *http.R
 		return
 	}
 	utilities.RespondJson(writer, http.StatusCreated, user)
+}
+
+func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqToken := r.Header.Get("Authorization")
+		splitToken := strings.Split(reqToken, "Bearer ")
+		if len(reqToken) < 1 {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, fmt.Errorf("token not found"))
+			return
+		}
+
+		reqToken = splitToken[1]
+
+		userId, found := h.userService.GetUserId(&dto.Bearer{Token: reqToken})
+		if !found {
+			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, fmt.Errorf("invalid token"))
+			return
+		}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, userId)))
+	})
+}
+
+func (h *UserHandler) Logout(writer http.ResponseWriter, request *http.Request) {
+	reqToken := request.Header.Get("Authorization")
+	if reqToken == "" {
+		utilities.ErrorJsonRespond(writer, http.StatusUnauthorized, fmt.Errorf("token not found"))
+		return
+	}
+	splitToken := strings.Split(reqToken, "Bearer ")
+	reqToken = splitToken[1]
+	if err := h.userService.DeleteUserSession(&dto.Bearer{Token: reqToken}); err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+		return
+	}
+	utilities.RespondJson(writer, http.StatusOK, nil)
 }
