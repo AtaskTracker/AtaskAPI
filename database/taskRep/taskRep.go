@@ -58,6 +58,24 @@ func (rep *TaskRep) GetByUserId(id string) ([]dto.Task, error) {
 	return tasks, nil
 }
 
+func (rep *TaskRep) GetById(taskId string) (*dto.Task, error) {
+	var collection = rep.mongo.Database(dbName).Collection(collectionName)
+	var result bson.M
+	if err := collection.FindOne(context.Background(), bson.M{"_id": taskId}).Decode(&result); err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+
+	var task *dto.Task
+	bsonBytes, _ := bson.Marshal(result)
+	bson.Unmarshal(bsonBytes, &task)
+	return task, nil
+}
+
 func (rep *TaskRep) UpdateById(newTask dto.Task) error {
 	var collection = rep.mongo.Database(dbName).Collection(collectionName)
 	var err = collection.FindOneAndReplace(context.Background(), bson.M{"_id": newTask.UUID}, newTask).Err()

@@ -7,6 +7,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/handlers/utilities"
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"time"
 )
@@ -50,6 +51,34 @@ func (h *TaskHandler) GetTasksByUserId(writer http.ResponseWriter, request *http
 		return
 	}
 	utilities.RespondJson(writer, http.StatusOK, tasks)
+}
+
+func (h *TaskHandler) UpdateTask(writer http.ResponseWriter, request *http.Request) {
+	taskId, _ := mux.Vars(request)["taskId"]
+	var task = &dto.Task{}
+	if err := json.NewDecoder(request.Body).Decode(task); err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusBadRequest, fmt.Errorf("json decode failed"))
+		return
+	}
+	taskUUID, err := primitive.ObjectIDFromHex(taskId)
+	if err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("task not found"))
+		return
+	}
+	task.UUID = taskUUID
+	userId := request.Context().Value(contextKeyId).(string)
+	err = h.taskService.UpdateTask(task, userId)
+	if err != nil {
+		switch err.Error() {
+		case "task not found":
+			utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("task not found"))
+			return
+		case "forbiden: not participant":
+			utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("forbiden: not participant"))
+			return
+		}
+	}
+	utilities.RespondJson(writer, http.StatusOK, task)
 }
 
 func (h *TaskHandler) DeleteByUserId(writer http.ResponseWriter, request *http.Request) {

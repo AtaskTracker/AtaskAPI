@@ -42,6 +42,7 @@ func (s *server) ConfigureRouter() {
 	s.router.HandleFunc("/task", s.userHandler.AuthorizationMW(s.taskHandler.GetUserTasks)).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.GetTasksByUserId)).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.DeleteByUserId)).Methods("DELETE")
+	s.router.HandleFunc("/task/{taskId}", s.userHandler.AuthorizationMW(s.taskHandler.UpdateTask)).Methods("PUT")
 
 	s.router.HandleFunc("/auth/logout", s.userHandler.Logout).Methods("POST")
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")

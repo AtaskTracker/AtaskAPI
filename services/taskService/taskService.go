@@ -1,6 +1,7 @@
 package taskService
 
 import (
+	"fmt"
 	"github.com/AtaskTracker/AtaskAPI/database/taskRep"
 	"github.com/AtaskTracker/AtaskAPI/dto"
 	"github.com/AtaskTracker/AtaskAPI/services/googleCloudService"
@@ -32,6 +33,29 @@ func (s *TaskService) CreateTask(task *dto.Task, userId string) (*dto.Task, erro
 	return &addedTask, nil
 }
 
+func (s *TaskService) GetById(taskId string) (*dto.Task, error) {
+	task, err := s.taskRep.GetById(taskId)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (s *TaskService) UpdateTask(task *dto.Task, userId string) error {
+	oldTask, err := s.taskRep.GetById(task.UUID.String())
+	if err != nil {
+		return err
+	}
+	if oldTask != nil {
+		return fmt.Errorf("task not found")
+	}
+	if !isParticipant(userId, oldTask.Participants) {
+		return fmt.Errorf("forbiden: not participant")
+	}
+	err = s.taskRep.UpdateById(*task)
+	return err
+}
+
 func (s *TaskService) GetByUserId(userId string) ([]dto.Task, error) {
 	var tasks, err = s.taskRep.GetByUserId(userId)
 	return tasks, err
@@ -53,4 +77,13 @@ func (s *TaskService) GetTasks(userId string, dateToString string, dateFromStrin
 		return nil, err
 	}
 	return s.taskRep.GetWithFilter(userId, dateTo, dateFrom, label)
+}
+
+func isParticipant(userId string, participants []string) bool {
+	for _, v := range participants {
+		if v == userId {
+			return true
+		}
+	}
+	return false
 }
