@@ -39,10 +39,15 @@ func (h *UserHandler) Login(writer http.ResponseWriter, request *http.Request) {
 
 func (h *UserHandler) Logout(writer http.ResponseWriter, request *http.Request) {
 	reqToken := request.Header.Get("Authorization")
+	if reqToken == "" {
+		utilities.ErrorJsonRespond(writer, http.StatusUnauthorized, fmt.Errorf("token not found"))
+		return
+	}
 	splitToken := strings.Split(reqToken, "Bearer ")
 	reqToken = splitToken[1]
 	if err := h.userService.DeleteUserSession(&dto.Bearer{Token: reqToken}); err != nil {
 		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+		return
 	}
 	utilities.RespondJson(writer, http.StatusOK, nil)
 }

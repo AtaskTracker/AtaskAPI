@@ -16,8 +16,8 @@ type UserService struct {
 	redis   *redis.Client
 }
 
-func New(rep *userRepo.UserRepo) *UserService {
-	return &UserService{userRep: rep}
+func New(rep *userRepo.UserRepo, redis *redis.Client) *UserService {
+	return &UserService{userRep: rep, redis: redis}
 }
 
 func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
@@ -36,7 +36,7 @@ func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if status := s.redis.Set(context.Background(), bearer.Token, addedUser.UUID, time.Hour*24); status.Err() != nil {
+	if status := s.redis.Set(context.Background(), bearer.Token, addedUser.UUID.String(), time.Hour*24); status.Err() != nil {
 		return nil, err
 	}
 

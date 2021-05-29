@@ -7,6 +7,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/handlers/userHandler"
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/AtaskTracker/AtaskAPI/services/userService"
+	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
@@ -41,16 +42,16 @@ func (s *server) ConfigureRouter() {
 	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.GetTasksByUserId)).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.DeleteByUserId)).Methods("DELETE")
 
-	s.router.HandleFunc("auth/logout", s.userHandler.Logout).Methods("POST")
+	s.router.HandleFunc("/auth/logout", s.userHandler.Logout).Methods("POST")
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
 
 }
 
-func NewServer(mongoClient *mongo.Client) *server {
+func NewServer(mongoClient *mongo.Client, redis *redis.Client) *server {
 	server := &server{
 		router:      mux.NewRouter(),
 		taskHandler: taskHandler.New(taskService.New(taskRep.New(mongoClient))),
-		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient))),
+		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient), redis)),
 	}
 
 	server.ConfigureRouter()
