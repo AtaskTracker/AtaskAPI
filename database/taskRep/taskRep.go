@@ -90,13 +90,13 @@ func (rep *TaskRep) DeleteById(id string) error {
 }
 
 //TODO: сделать так чтобы лейблы работали (пока они не работают ¯\_(ツ)_/¯)
-func (rep *TaskRep) AddLabel(taskId string, labelId string) error {
+func (rep *TaskRep) AddLabel(taskId string, label dto.Label) error {
 	var collection = rep.mongo.Database(dbName).Collection(collectionName)
 	var result bson.M
 	if err := collection.FindOne(context.Background(), bson.M{"_id": taskId}).Decode(&result); err != nil {
 		return err
 	}
-	result["labels"] = append(result["labels"].([]string), labelId)
+	result["labels"] = append(result["labels"].([]dto.Label), label)
 	var err = collection.FindOneAndReplace(context.Background(), bson.M{"_id": taskId}, result).Err()
 	return err
 }

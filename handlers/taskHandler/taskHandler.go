@@ -113,3 +113,28 @@ func (h *TaskHandler) GetUserTasks(writer http.ResponseWriter, request *http.Req
 	}
 	utilities.RespondJson(writer, http.StatusOK, tasks)
 }
+
+func (h *TaskHandler) AddLabel(writer http.ResponseWriter, request *http.Request) {
+	userId := request.Context().Value(contextKeyId).(string)
+	taskId, _ := mux.Vars(request)["taskId"]
+	var label = &dto.Label{}
+	if err := json.NewDecoder(request.Body).Decode(label); err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusBadRequest, fmt.Errorf("json decode failed"))
+		return
+	}
+	err := h.taskService.AddLabel(userId, taskId, *label)
+	if err != nil {
+		switch err.Error() {
+		case "task not found":
+			utilities.ErrorJsonRespond(writer, http.StatusNotFound, err)
+			return
+		case "forbiden: not participant":
+			utilities.ErrorJsonRespond(writer, http.StatusForbidden, err)
+			return
+		default:
+			utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+			return
+		}
+	}
+	utilities.RespondJson(writer, http.StatusOK, nil)
+}

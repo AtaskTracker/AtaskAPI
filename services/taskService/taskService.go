@@ -79,6 +79,20 @@ func (s *TaskService) GetTasks(userId string, dateToString string, dateFromStrin
 	return s.taskRep.GetWithFilter(userId, dateTo, dateFrom, label)
 }
 
+func (s *TaskService) AddLabel(userId string, taskId string, label dto.Label) error {
+	task, err := s.taskRep.GetById(taskId)
+	if err != nil {
+		return err
+	}
+	if task != nil {
+		return fmt.Errorf("task not found")
+	}
+	if !isParticipant(userId, task.Participants) {
+		return fmt.Errorf("forbiden: not participant")
+	}
+	return s.taskRep.AddLabel(taskId, label)
+}
+
 func isParticipant(userId string, participants []string) bool {
 	for _, v := range participants {
 		if v == userId {
