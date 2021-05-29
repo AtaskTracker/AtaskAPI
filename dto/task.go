@@ -13,5 +13,5 @@ type Task struct {
 	Status       string             `bson:"status" json:"status"`
 	Date         time.Time          `bson:"date" json:"date"` //"date": "2021-10-10 12:00"
 	Participants []string           `bson:"participants" json:"participants"`
-	Labels       []string           `bson:"labels" json:"labels"`
+	Labels       []Label            `bson:"labels" json:"labels"`
 }

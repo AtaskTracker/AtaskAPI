@@ -38,12 +38,13 @@ func (s *server) ConfigureRouter() {
 
 	//TODO: add endpoints here
 	s.router.HandleFunc("/task", s.taskHandler.CreateTask).Methods("POST")
+	s.router.HandleFunc("/task", s.taskHandler.GetUserTasks).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.taskHandler.GetTasksByUserId).Methods("GET")
 	s.router.HandleFunc("/task/{id}", s.taskHandler.DeleteByUserId).Methods("DELETE")
 
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
 
-	s.router.HandleFunc("/users", s.userHandler.GetUserByEmail).Methods("GET")
+	s.router.HandleFunc("/user", s.userHandler.GetUserByEmail).Methods("GET")
 
 }
 

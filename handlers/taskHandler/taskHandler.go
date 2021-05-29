@@ -8,6 +8,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 const contextKeyUserID = "userId"
@@ -54,4 +55,24 @@ func (h *TaskHandler) DeleteByUserId(writer http.ResponseWriter, request *http.R
 		return
 	}
 	utilities.RespondJson(writer, http.StatusOK, nil)
+}
+
+func (h *TaskHandler) GetUserTasks(writer http.ResponseWriter, request *http.Request) {
+	//TODO: достать id пользователя из контекста запроса (его туда должна положить мидлварь авторизации)
+	userId := "some hex uuid string" // request.Context().Value(contextKeyId).(string)
+	dateFrom := request.FormValue("dateFrom")
+	dateTo := request.FormValue("dateTo")
+	label := request.FormValue("label")
+	tasks, err := h.taskService.GetTasks(userId, dateTo, dateFrom, label)
+	if err != nil {
+		switch err.(type) {
+		default:
+			utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+			return
+		case *time.ParseError:
+			utilities.ErrorJsonRespond(writer, http.StatusBadRequest, err)
+			return
+		}
+	}
+	utilities.RespondJson(writer, http.StatusOK, tasks)
 }
