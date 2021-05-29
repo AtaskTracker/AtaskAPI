@@ -1,0 +1,410 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/thinkingabouther2/AtaskTracker/1.0.0
+info:
+  description: API for mobile app AtaskTracker
+  version: "1.0.0"
+  title: AtaskTrackerAPI
+tags:
+  - name: authorization (Google)
+    description: authorize client using Google OAuth2.0
+  - name: tasks
+    description: create, read, update, and delete over tasks for logged user
+  - name: labels
+    description: create, read and delete over labels for logged user
+  - name: users
+    description: read info about other users for logged user
+  - name: stats
+    description: read stats on task completion for logged user 
+
+paths:
+  /auth/google:
+    post:
+      tags:
+        - authorization (Google)
+      summary: Authorize against the api with Google OAuth2 token
+      responses:
+        '201':
+          description: Authorized. Session was stored in cookies
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Improper request format. No token set
+        '401':
+          description: Improper token
+      requestBody:
+        $ref: '#/components/requestBodies/Code'
+    get:
+      tags:
+        - authorization (Google)
+      summary: Get info of currently logged user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+      security:
+        - bearerAuth : []
+    delete:
+      tags:
+        - authorization (Google)
+      summary: Logout from the account
+      responses:
+        '200':
+          description: Logout successfully
+      security:
+        - bearerAuth : []
+  /task:
+    post:
+      tags: 
+        - tasks
+      summary: Create new task
+      responses:
+        '201': 
+          description: 'Created'
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized
+      requestBody:
+        $ref: '#/components/requestBodies/Task'
+      security:
+        - bearerAuth : []
+    get:
+      tags: 
+        - tasks
+      summary: Get tasks with filter
+      parameters:
+          - in: query
+            name: dateFrom
+            schema:
+              type: string
+              format: date
+              example: "2021-01-30"
+          - in: query
+            name: dateTo
+            schema:
+              type: string
+              format: date
+              example: "2021-02-01"
+          - in: query
+            name: label
+            schema:
+              type: string
+              example: Крутые
+
+      responses:
+        '200': 
+          description: 'OK'
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: No tasks found
+      security:
+      - bearerAuth : []
+    
+  /task/{id}:
+    get:
+      tags: 
+        - tasks
+      summary: Get a task
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200': 
+          description: 'OK'
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: No task found
+      security:
+      - bearerAuth : []
+    put:
+      tags: 
+        - tasks
+      summary: Update a task
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204': 
+          description: 'Updated'
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: No task found
+      requestBody:
+        $ref: '#/components/requestBodies/Task'
+      security:
+      - bearerAuth : []
+    delete:
+      tags:
+        - tasks
+      summary:  Delete a task
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Deleted 
+      security:
+      - bearerAuth : []
+  /label:
+    post:
+      tags: 
+        - labels
+      summary: Create new label
+      responses:
+        '201': 
+          description: 'Created'
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LabelResponse'
+      
+        '401':
+          description: Unauthorized
+      requestBody:
+        $ref: '#/components/requestBodies/Label'
+      security:
+        - bearerAuth : []
+    get:
+      tags: 
+        - labels
+      summary: Get all labels
+      responses:
+        '200': 
+          description: 'OK'
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LabelResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: No labels found
+      security:
+      - bearerAuth : []
+  /label/{id}:
+    delete:
+        tags:
+          - labels
+        summary:  Delete a label
+        parameters:
+          - in: path
+            name: id
+            schema:
+              type: string
+            required: true
+        responses:
+          '200':
+            description: Deleted 
+        security:
+        - bearerAuth : []
+  /stats/done:
+    get:
+      tags:
+        - stats
+      summary: Get stats for done issues
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [dueDate, labeled]
+          required: true
+        - in: query
+          name: dateFrom
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - in: query
+          name: dateTo
+          schema:
+            type: string
+            format: date
+            example: "2021-02-01"
+        - in: query
+          name: withLabel
+          schema:
+            type: string
+            example: Крутые
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+      security:
+      - bearerAuth : []
+  /user:
+    get:
+      tags: 
+        - users
+      summary: Get a user
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+      responses:
+        '200': 
+          description: 'OK'
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '404':
+          description: No task found
+      security:
+      - bearerAuth : []
+                
+components:
+  schemas:
+    Code:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          example: eyJhbGciOiJSUzI1NiIsImtpZCI6
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Arseny Neustroev
+        email:
+          type: string
+          example: neustroev.arseny@gmail.com
+        picture_url:
+          type: string
+          example: https://lh3.googleusercontent.com/ogw/ADGmqu_SZ0vHnFjjUpdiaM--SmBZpuef50Nzg8JczhNOcw=s192-c-mo
+    Task:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Выгулять собаку
+        description:
+          type: string
+          example: Надо сделать это хорошо, иначе ничего не получится
+        picture_url:
+          type: string
+          example: https://www.planetware.com/wpimages/2020/02/france-in-pictures-beautiful-places-to-photograph-eiffel-tower.jpg
+        members:
+          type: array
+          items:
+            type: string
+          example: 
+            - egor.kartashov@email.com
+            - arseny.neustroev@email.com
+        label:
+          type: string
+          example: very urgent
+        due_date: 
+          type: string
+          format: date
+          example: "2021-01-30"
+    TaskResponse:
+      allOf:
+      - type: object
+        properties:
+          id:
+            type: string
+            example: e6b9af5d-3e47-47c1-97b8-c889cf007db4
+      - $ref: '#/components/schemas/Task'
+    Label:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Крутая 
+        color:
+          type: string
+          example: '#FF0000'
+    LabelResponse:
+      allOf:
+      - type: object
+        properties:
+          id:
+            type: string
+            example: e6b9af5d-3e47-47c1-97b8-c889cf007db4
+      - $ref: '#/components/schemas/Label'
+    StatsResponse:
+      type: object
+      properties:
+        percentage:
+          type: number
+          example: 66.77
+      
+      
+  requestBodies:
+      Code:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Code'
+      Task:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      
+      Label:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+
+        description: Code to access info via Google Identity API
+        required: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
