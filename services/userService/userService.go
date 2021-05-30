@@ -2,6 +2,7 @@ package userService
 
 import (
 	"context"
+	"github.com/AtaskTracker/AtaskAPI/database/labelRep"
 	"github.com/AtaskTracker/AtaskAPI/database/userRepo"
 	"github.com/AtaskTracker/AtaskAPI/dto"
 	"github.com/go-redis/redis/v8"
@@ -12,14 +13,15 @@ import (
 )
 
 type UserService struct {
-	userRep *userRepo.UserRepo
-	redis   *redis.Client
+	userRep  *userRepo.UserRepo
+	redis    *redis.Client
+	labelRep *labelRep.LabelRep
 }
 
 const googleClientId = "954302622465-iruk7dibdhfpl7udjtstl056kaa1sv3e.apps.googleusercontent.com"
 
-func New(rep *userRepo.UserRepo, redis *redis.Client) *UserService {
-	return &UserService{userRep: rep, redis: redis}
+func New(userRep *userRepo.UserRepo, labelRep *labelRep.LabelRep, redis *redis.Client) *UserService {
+	return &UserService{userRep: userRep, redis: redis, labelRep: labelRep}
 }
 
 func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
@@ -72,6 +74,14 @@ func (s *UserService) DeleteUserSession(bearer *dto.Bearer) error {
 		return status.Err()
 	}
 	return nil
+}
+
+func (s *UserService) GetLabels(userId string) ([]dto.Label, error) {
+	labels, err := s.labelRep.GetLabels(userId)
+	if err != nil {
+		return nil, err
+	}
+	return labels, nil
 }
 
 func mapToUserDto(payload *idtoken.Payload) *dto.User {

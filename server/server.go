@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/AtaskTracker/AtaskAPI/database/labelRep"
 	"github.com/AtaskTracker/AtaskAPI/database/taskRep"
 	"github.com/AtaskTracker/AtaskAPI/database/userRepo"
 	"github.com/AtaskTracker/AtaskAPI/handlers/taskHandler"
@@ -45,6 +46,8 @@ func (s *server) ConfigureRouter() {
 	s.router.HandleFunc("/task/{taskId}", s.userHandler.AuthorizationMW(s.taskHandler.UpdateTask)).Methods("PUT")
 	s.router.HandleFunc("/task/label/{taskId}", s.userHandler.AuthorizationMW(s.taskHandler.AddLabel)).Methods("POST")
 
+	s.router.HandleFunc("/label", s.userHandler.AuthorizationMW(s.userHandler.GetLabels)).Methods("GET")
+
 	s.router.HandleFunc("/auth/logout", s.userHandler.Logout).Methods("POST")
 	s.router.HandleFunc("/auth/google", s.userHandler.Login).Methods("POST")
 
@@ -56,7 +59,7 @@ func NewServer(mongoClient *mongo.Client, redis *redis.Client) *server {
 	server := &server{
 		router:      mux.NewRouter(),
 		taskHandler: taskHandler.New(taskService.New(taskRep.New(mongoClient))),
-		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient), redis)),
+		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient), labelRep.New(mongoClient), redis)),
 	}
 
 	server.ConfigureRouter()

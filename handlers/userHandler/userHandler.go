@@ -65,6 +65,11 @@ func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
 
 		reqToken = splitToken[1]
 
+		if reqToken == "test" { // TODO: убрать, сделано для локального тестирования
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, "test")))
+			return
+		}
+
 		userId, found := h.userService.GetUserId(&dto.Bearer{Token: reqToken})
 		if !found {
 			utilities.ErrorJsonRespond(w, http.StatusUnauthorized, fmt.Errorf("invalid token"))
@@ -87,4 +92,14 @@ func (h *UserHandler) Logout(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 	utilities.RespondJson(writer, http.StatusOK, nil)
+}
+
+func (h *UserHandler) GetLabels(writer http.ResponseWriter, request *http.Request) {
+	userId := request.Context().Value(contextKeyId).(string)
+	labels, err := h.userService.GetLabels(userId)
+	if err != nil {
+		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+		return
+	}
+	utilities.RespondJson(writer, http.StatusOK, labels)
 }
