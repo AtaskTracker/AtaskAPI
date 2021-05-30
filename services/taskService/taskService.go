@@ -79,6 +79,22 @@ func (s *TaskService) GetTasks(userId string, dateToString string, dateFromStrin
 	return s.taskRep.GetWithFilter(userId, dateTo, dateFrom, label)
 }
 
+func (s *TaskService) GetCompletionPercentage(userId string, dateToString string, dateFromString string, label string) (dto.CompletionPercentage, error) {
+	tasks, err := s.GetTasks(userId, dateToString, dateFromString, label)
+	if err != nil {
+		return dto.CompletionPercentage{}, err
+	}
+	completed := 0
+	for _, task := range tasks {
+		if task.Status == "done" {
+			completed++
+		}
+	}
+	percentage := float64(completed) / float64(len(tasks)) * 100
+	response := dto.CompletionPercentage{Percentage: percentage}
+	return response, nil
+}
+
 func (s *TaskService) AddLabel(userId string, taskId string, label dto.Label) error {
 	task, err := s.taskRep.GetById(taskId)
 	if err != nil {

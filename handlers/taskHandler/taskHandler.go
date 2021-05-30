@@ -114,6 +114,25 @@ func (h *TaskHandler) GetUserTasks(writer http.ResponseWriter, request *http.Req
 	utilities.RespondJson(writer, http.StatusOK, tasks)
 }
 
+func (h *TaskHandler) GetCompletionPercentage(writer http.ResponseWriter, request *http.Request) {
+	userId := request.Context().Value(contextKeyId).(string)
+	dateFrom := request.FormValue("dateFrom")
+	dateTo := request.FormValue("dateTo")
+	label := request.FormValue("label")
+	tasks, err := h.taskService.GetCompletionPercentage(userId, dateTo, dateFrom, label)
+	if err != nil {
+		switch err.(type) {
+		default:
+			utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
+			return
+		case *time.ParseError:
+			utilities.ErrorJsonRespond(writer, http.StatusBadRequest, err)
+			return
+		}
+	}
+	utilities.RespondJson(writer, http.StatusOK, tasks)
+}
+
 func (h *TaskHandler) AddLabel(writer http.ResponseWriter, request *http.Request) {
 	userId := request.Context().Value(contextKeyId).(string)
 	taskId, _ := mux.Vars(request)["taskId"]
