@@ -34,14 +34,20 @@ func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
 		return nil, err
 	}
 	user := mapToUserDto(payload)
-	addedUser, err := s.userRep.CreateUser(*user)
+	var currentUser dto.User
+	existingUser, err := s.userRep.GetUserByEmail(user.Email)
+	if !existingUser.UUID.IsZero() {
+		currentUser, err = s.userRep.UpdateUser(*user)
+	} else {
+		currentUser, err = s.userRep.CreateUser(*user)
+	}
 	if err != nil {
 		return nil, err
 	}
-	if status := s.redis.Set(context.Background(), bearer.Token, addedUser.UUID.String(), time.Hour*24); status.Err() != nil {
+	if status := s.redis.Set(context.Background(), bearer.Token, currentUser.UUID.String(), time.Hour*24); status.Err() != nil {
 		return nil, err
 	}
-	return &addedUser, nil
+	return &currentUser, nil
 }
 
 func (s *UserService) GetUserByEmail(email string) (*dto.User, error) {

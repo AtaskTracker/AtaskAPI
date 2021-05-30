@@ -45,3 +45,19 @@ func (rep *UserRepo) GetUserByEmail(email string) (dto.User, error) {
 	}
 	return user, nil
 }
+
+func (rep *UserRepo) UpdateUser(user dto.User) (dto.User, error) {
+	filter := bson.D{{"_id", user.UUID}}
+	_, err := rep.mongo.Database(dbName).Collection(collectionName).
+		ReplaceOne(
+			context.Background(),
+			filter,
+			bson.M{
+				"name":        user.Name,
+				"picture_url": user.PictureUrl,
+			})
+	if err != nil {
+		return dto.User{}, err
+	}
+	return user, nil
+}
