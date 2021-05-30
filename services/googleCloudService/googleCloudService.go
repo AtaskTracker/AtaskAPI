@@ -11,6 +11,10 @@ const baseUrl = "https://google-cloud-task-processor.herokuapp.com"
 type GoogleCloudService struct {
 }
 
+func New() *GoogleCloudService {
+	return &GoogleCloudService{}
+}
+
 func (s *GoogleCloudService) UploadImage(name string, image string) (string, error) {
 	url := baseUrl + "/storage/image"
 	values := map[string]string{"name": name, "payload": image}

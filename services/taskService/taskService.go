@@ -3,6 +3,7 @@ package taskService
 import (
 	"fmt"
 	"github.com/AtaskTracker/AtaskAPI/database/taskRep"
+	"github.com/AtaskTracker/AtaskAPI/database/userRepo"
 	"github.com/AtaskTracker/AtaskAPI/dto"
 	"github.com/AtaskTracker/AtaskAPI/services/googleCloudService"
 	"time"
@@ -10,23 +11,28 @@ import (
 
 type TaskService struct {
 	taskRep            *taskRep.TaskRep
+	userRep            *userRepo.UserRepo
 	googleCloudService *googleCloudService.GoogleCloudService
 }
 
-func New(rep *taskRep.TaskRep) *TaskService {
-	return &TaskService{taskRep: rep}
+func New(taskRep *taskRep.TaskRep, userRep *userRepo.UserRepo, cloudService *googleCloudService.GoogleCloudService) *TaskService {
+	return &TaskService{taskRep: taskRep, userRep: userRep, googleCloudService: cloudService}
 }
 
 const dateFormat = "2006-01-02"
 
 func (s *TaskService) CreateTask(task *dto.Task, userId string) (*dto.Task, error) {
-	task.Participants = append(task.Participants, userId)
-	url, err2 := s.googleCloudService.UploadImage(task.UUID.Hex(), task.Photo)
-	if err2 != nil {
-		return task, err2
+	user, err := s.userRep.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	task.Participants = append(task.Participants, user.Email)
+	url, err := s.googleCloudService.UploadImage(task.UUID.Hex(), task.Photo)
+	if err != nil {
+		return task, err
 	}
 	task.Photo = url
-	var addedTask, err = s.taskRep.CreateTask(*task)
+	addedTask, err := s.taskRep.CreateTask(*task)
 	if err != nil {
 		return nil, err
 	}

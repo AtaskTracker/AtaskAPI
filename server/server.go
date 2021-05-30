@@ -6,6 +6,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/database/userRepo"
 	"github.com/AtaskTracker/AtaskAPI/handlers/taskHandler"
 	"github.com/AtaskTracker/AtaskAPI/handlers/userHandler"
+	"github.com/AtaskTracker/AtaskAPI/services/googleCloudService"
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/AtaskTracker/AtaskAPI/services/userService"
 	"github.com/go-redis/redis/v8"
@@ -59,7 +60,7 @@ func (s *server) ConfigureRouter() {
 func NewServer(mongoClient *mongo.Client, redis *redis.Client) *server {
 	server := &server{
 		router:      mux.NewRouter(),
-		taskHandler: taskHandler.New(taskService.New(taskRep.New(mongoClient))),
+		taskHandler: taskHandler.New(taskService.New(taskRep.New(mongoClient), userRepo.New(mongoClient), googleCloudService.New())),
 		userHandler: userHandler.New(userService.New(userRepo.New(mongoClient), labelRep.New(mongoClient), redis)),
 	}
 

@@ -66,7 +66,7 @@ func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
 		reqToken = splitToken[1]
 
 		if reqToken == "test" { // TODO: убрать, сделано для локального тестирования
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, "test")))
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKeyId, "60b3d501385f7aa33124138e")))
 			return
 		}
 

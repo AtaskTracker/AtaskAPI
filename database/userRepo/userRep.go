@@ -46,6 +46,21 @@ func (rep *UserRepo) GetUserByEmail(email string) (dto.User, error) {
 	return user, nil
 }
 
+func (rep *UserRepo) GetUserById(userId string) (dto.User, error) {
+	user := dto.User{}
+	objectId, _ := primitive.ObjectIDFromHex(userId)
+	filter := bson.M{"_id": objectId}
+	err := rep.mongo.
+		Database(dbName).
+		Collection(collectionName).
+		FindOne(context.Background(), filter).
+		Decode(&user)
+	if err != nil && err != mongo.ErrNoDocuments {
+		return user, err
+	}
+	return user, nil
+}
+
 func (rep *UserRepo) UpdateUser(user dto.User) (dto.User, error) {
 	filter := bson.D{{"_id", user.UUID}}
 	_, err := rep.mongo.Database(dbName).Collection(collectionName).
