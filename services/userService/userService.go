@@ -37,6 +37,7 @@ func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
 	var currentUser dto.User
 	existingUser, err := s.userRep.GetUserByEmail(user.Email)
 	if !existingUser.UUID.IsZero() {
+		user.UUID = existingUser.UUID
 		currentUser, err = s.userRep.UpdateUser(*user)
 	} else {
 		currentUser, err = s.userRep.CreateUser(*user)
