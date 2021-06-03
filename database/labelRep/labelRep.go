@@ -18,9 +18,9 @@ func New(mongo *mongo.Client) *LabelRep {
 	return &LabelRep{mongo: mongo}
 }
 
-func (rep *LabelRep) GetLabels(userId string) ([]dto.Label, error) {
+func (rep *LabelRep) GetLabels(userEmail string) ([]dto.Label, error) {
 	var collection = rep.mongo.Database(dbName).Collection(collectionName)
-	var result, err = collection.Find(context.Background(), bson.M{"participants": userId})
+	var result, err = collection.Find(context.Background(), bson.M{"participants": userEmail})
 	if err != nil {
 		return nil, err
 	}

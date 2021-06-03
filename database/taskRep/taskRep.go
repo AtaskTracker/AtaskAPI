@@ -112,8 +112,8 @@ func (rep *TaskRep) AddParticipant(taskId string, email string) error {
 	return err
 }
 
-func (rep *TaskRep) GetWithFilter(userId string, dateTo time.Time, dateFrom time.Time, label string) ([]dto.Task, error) {
-	filter := rep.createFilter(userId, dateTo, dateFrom, label)
+func (rep *TaskRep) GetWithFilter(userEmail string, dateTo time.Time, dateFrom time.Time, label string) ([]dto.Task, error) {
+	filter := rep.createFilter(userEmail, dateTo, dateFrom, label)
 	var collection = rep.mongo.Database(dbName).Collection(collectionName)
 	var result, err = collection.Find(context.Background(), filter)
 	if err != nil {
@@ -126,9 +126,9 @@ func (rep *TaskRep) GetWithFilter(userId string, dateTo time.Time, dateFrom time
 	return tasks, nil
 }
 
-func (rep *TaskRep) createFilter(userId string, dateTo time.Time, dateFrom time.Time, label string) bson.M {
+func (rep *TaskRep) createFilter(userEmail string, dateTo time.Time, dateFrom time.Time, label string) bson.M {
 	filter := []bson.M{
-		{"participants": userId},
+		{"participants": userEmail},
 	}
 	if !dateTo.IsZero() && !dateFrom.IsZero() {
 		filter = append(filter, bson.M{"date": bson.M{

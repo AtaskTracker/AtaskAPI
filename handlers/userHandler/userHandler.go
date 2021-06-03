@@ -101,5 +101,9 @@ func (h *UserHandler) GetLabels(writer http.ResponseWriter, request *http.Reques
 		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
 		return
 	}
+	if labels == nil {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no result found"))
+		return
+	}
 	utilities.RespondJson(writer, http.StatusOK, labels)
 }

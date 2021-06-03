@@ -83,7 +83,11 @@ func (s *UserService) DeleteUserSession(bearer *dto.Bearer) error {
 }
 
 func (s *UserService) GetLabels(userId string) ([]dto.Label, error) {
-	labels, err := s.labelRep.GetLabels(userId)
+	user, err := s.userRep.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	labels, err := s.labelRep.GetLabels(user.Email)
 	if err != nil {
 		return nil, err
 	}
