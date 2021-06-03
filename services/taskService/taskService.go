@@ -48,14 +48,18 @@ func (s *TaskService) GetById(taskId string) (*dto.Task, error) {
 }
 
 func (s *TaskService) UpdateTask(task *dto.Task, userId string) error {
-	oldTask, err := s.taskRep.GetById(task.UUID.String())
+	user, err := s.userRep.GetUserById(userId)
 	if err != nil {
 		return err
 	}
-	if oldTask != nil {
+	oldTask, err := s.taskRep.GetById(task.UUID.Hex())
+	if err != nil {
+		return err
+	}
+	if oldTask == nil {
 		return fmt.Errorf("task not found")
 	}
-	if !isParticipant(userId, oldTask.Participants) {
+	if !isParticipant(user.Email, oldTask.Participants) {
 		return fmt.Errorf("forbiden: not participant")
 	}
 	err = s.taskRep.UpdateById(*task)
