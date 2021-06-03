@@ -82,7 +82,11 @@ func (s *TaskService) GetTasks(userId string, dateToString string, dateFromStrin
 	if err != nil && dateFromString != "" {
 		return nil, err
 	}
-	return s.taskRep.GetWithFilter(userId, dateTo, dateFrom, label)
+	user, err := s.userRep.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	return s.taskRep.GetWithFilter(user.Email, dateTo, dateFrom, label)
 }
 
 func (s *TaskService) GetCompletionPercentage(userId string, dateToString string, dateFromString string, label string) (dto.CompletionPercentage, error) {

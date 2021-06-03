@@ -101,6 +101,10 @@ func (h *TaskHandler) GetUserTasks(writer http.ResponseWriter, request *http.Req
 	dateTo := request.FormValue("dateTo")
 	label := request.FormValue("label")
 	tasks, err := h.taskService.GetTasks(userId, dateTo, dateFrom, label)
+	if tasks == nil {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no result"))
+		return
+	}
 	if err != nil {
 		switch err.(type) {
 		default:
