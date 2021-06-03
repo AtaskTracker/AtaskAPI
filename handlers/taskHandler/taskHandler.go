@@ -38,19 +38,24 @@ func (h *TaskHandler) CreateTask(writer http.ResponseWriter, request *http.Reque
 	utilities.RespondJson(writer, http.StatusCreated, task)
 }
 
-func (h *TaskHandler) GetTasksByUserId(writer http.ResponseWriter, request *http.Request) {
-	userId, _ := mux.Vars(request)["id"]
-	contextUserID := request.Context().Value(contextKeyId).(string)
-	if userId != contextUserID {
-		utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("no acces for this id"))
-		return
-	}
-	var tasks, err = h.taskService.GetByUserId(userId)
+func (h *TaskHandler) GetTaskById(writer http.ResponseWriter, request *http.Request) {
+	id, _ := mux.Vars(request)["id"]
+	// TODO: проверять привелегии, эти всратые
+	//contextUserID := request.Context().Value(contextKeyId).(string)
+	//if userId != contextUserID {
+	//	utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("no acces for this id"))
+	//	return
+	//}
+	var task, err = h.taskService.GetById(id)
 	if err != nil {
 		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
 		return
 	}
-	utilities.RespondJson(writer, http.StatusOK, tasks)
+	if task == nil {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("task not found"))
+		return
+	}
+	utilities.RespondJson(writer, http.StatusOK, task)
 }
 
 func (h *TaskHandler) UpdateTask(writer http.ResponseWriter, request *http.Request) {
@@ -81,14 +86,15 @@ func (h *TaskHandler) UpdateTask(writer http.ResponseWriter, request *http.Reque
 	utilities.RespondJson(writer, http.StatusOK, task)
 }
 
-func (h *TaskHandler) DeleteByUserId(writer http.ResponseWriter, request *http.Request) {
-	userId, _ := mux.Vars(request)["id"]
-	contextUserID := request.Context().Value(contextKeyId).(string)
-	if userId != contextUserID {
-		utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("no acces for this id"))
-		return
-	}
-	if err := h.taskService.DeleteById(userId); err != nil {
+func (h *TaskHandler) DeleteById(writer http.ResponseWriter, request *http.Request) {
+	id, _ := mux.Vars(request)["id"]
+	// TODO: проверять привелегии, эти всратые
+	//contextUserID := request.Context().Value(contextKeyId).(string)
+	//if userId != contextUserID {
+	//	utilities.ErrorJsonRespond(writer, http.StatusForbidden, fmt.Errorf("no acces for this id"))
+	//	return
+	//}
+	if err := h.taskService.DeleteById(id); err != nil {
 		utilities.ErrorJsonRespond(writer, http.StatusInternalServerError, err)
 		return
 	}

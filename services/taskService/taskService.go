@@ -62,11 +62,6 @@ func (s *TaskService) UpdateTask(task *dto.Task, userId string) error {
 	return err
 }
 
-func (s *TaskService) GetByUserId(userId string) ([]dto.Task, error) {
-	var tasks, err = s.taskRep.GetByUserId(userId)
-	return tasks, err
-}
-
 func (s *TaskService) DeleteById(id string) error {
 	return s.taskRep.DeleteById(id)
 }

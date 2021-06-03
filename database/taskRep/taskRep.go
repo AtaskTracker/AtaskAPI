@@ -61,7 +61,8 @@ func (rep *TaskRep) GetByUserId(id string) ([]dto.Task, error) {
 func (rep *TaskRep) GetById(taskId string) (*dto.Task, error) {
 	var collection = rep.mongo.Database(dbName).Collection(collectionName)
 	var result bson.M
-	if err := collection.FindOne(context.Background(), bson.M{"_id": taskId}).Decode(&result); err != nil {
+	objectId, _ := primitive.ObjectIDFromHex(taskId)
+	if err := collection.FindOne(context.Background(), bson.M{"_id": objectId}).Decode(&result); err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
 			return nil, nil

@@ -43,8 +43,8 @@ func (s *server) ConfigureRouter() {
 	s.router.HandleFunc("/task", s.userHandler.AuthorizationMW(s.taskHandler.CreateTask)).Methods("POST")
 	s.router.HandleFunc("/task", s.userHandler.AuthorizationMW(s.taskHandler.GetUserTasks)).Methods("GET")
 	s.router.HandleFunc("/stats/done", s.userHandler.AuthorizationMW(s.taskHandler.GetCompletionPercentage)).Methods("GET")
-	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.GetTasksByUserId)).Methods("GET")
-	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.DeleteByUserId)).Methods("DELETE")
+	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.GetTaskById)).Methods("GET")
+	s.router.HandleFunc("/task/{id}", s.userHandler.AuthorizationMW(s.taskHandler.DeleteById)).Methods("DELETE")
 	s.router.HandleFunc("/task/{taskId}", s.userHandler.AuthorizationMW(s.taskHandler.UpdateTask)).Methods("PUT")
 	s.router.HandleFunc("/task/label/{taskId}", s.userHandler.AuthorizationMW(s.taskHandler.AddLabel)).Methods("POST")
 
