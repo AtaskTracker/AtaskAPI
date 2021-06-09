@@ -51,7 +51,7 @@ func (h *UserHandler) GetUserByEmail(writer http.ResponseWriter, request *http.R
 		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no users with given email"))
 		return
 	}
-	utilities.RespondJson(writer, http.StatusCreated, user)
+	utilities.RespondJson(writer, http.StatusOK, user)
 }
 
 func (h *UserHandler) AuthorizationMW(next http.HandlerFunc) http.HandlerFunc {
