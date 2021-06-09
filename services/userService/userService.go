@@ -45,7 +45,7 @@ func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if status := s.redis.Set(context.Background(), bearer.Token, currentUser.UUID.String(), time.Hour*24); status.Err() != nil {
+	if status := s.redis.Set(context.Background(), bearer.Token, currentUser.UUID.Hex(), time.Hour*24); status.Err() != nil {
 		return nil, err
 	}
 	return &currentUser, nil
