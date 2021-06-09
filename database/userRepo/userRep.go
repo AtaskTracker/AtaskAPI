@@ -69,6 +69,7 @@ func (rep *UserRepo) UpdateUser(user dto.User) (dto.User, error) {
 			filter,
 			bson.M{
 				"name":        user.Name,
+				"email":       user.Email,
 				"picture_url": user.PictureUrl,
 			})
 	if err != nil {
