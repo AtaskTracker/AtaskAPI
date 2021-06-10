@@ -8,6 +8,7 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"net/http"
 	"time"
 )
@@ -129,7 +130,7 @@ func (h *TaskHandler) GetCompletionPercentage(writer http.ResponseWriter, reques
 	dateFrom := request.FormValue("dateFrom")
 	dateTo := request.FormValue("dateTo")
 	label := request.FormValue("label")
-	tasks, err := h.taskService.GetCompletionPercentage(userId, dateTo, dateFrom, label)
+	response, err := h.taskService.GetCompletionPercentage(userId, dateTo, dateFrom, label)
 	if err != nil {
 		switch err.(type) {
 		default:
@@ -140,7 +141,11 @@ func (h *TaskHandler) GetCompletionPercentage(writer http.ResponseWriter, reques
 			return
 		}
 	}
-	utilities.RespondJson(writer, http.StatusOK, tasks)
+	if math.IsNaN(response.Percentage) {
+		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no result"))
+		return
+	}
+	utilities.RespondJson(writer, http.StatusOK, response)
 }
 
 func (h *TaskHandler) AddLabel(writer http.ResponseWriter, request *http.Request) {
