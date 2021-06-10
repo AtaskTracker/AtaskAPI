@@ -131,10 +131,14 @@ func (rep *TaskRep) createFilter(userEmail string, dateTo time.Time, dateFrom ti
 	filter := []bson.M{
 		{"participants": userEmail},
 	}
-	if !dateTo.IsZero() && !dateFrom.IsZero() {
+	if !dateTo.IsZero() {
+		filter = append(filter, bson.M{"date": bson.M{
+			"$lt": dateTo,
+		}})
+	}
+	if !dateFrom.IsZero() {
 		filter = append(filter, bson.M{"date": bson.M{
 			"$gte": dateFrom,
-			"$lt":  dateTo,
 		}})
 	}
 	if label != "" {
