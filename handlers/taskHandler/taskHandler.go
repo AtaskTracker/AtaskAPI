@@ -8,7 +8,6 @@ import (
 	"github.com/AtaskTracker/AtaskAPI/services/taskService"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"math"
 	"net/http"
 	"time"
 )
@@ -140,10 +139,6 @@ func (h *TaskHandler) GetCompletionPercentage(writer http.ResponseWriter, reques
 			utilities.ErrorJsonRespond(writer, http.StatusBadRequest, err)
 			return
 		}
-	}
-	if math.IsNaN(response.Percentage) {
-		utilities.ErrorJsonRespond(writer, http.StatusNotFound, fmt.Errorf("no result"))
-		return
 	}
 	utilities.RespondJson(writer, http.StatusOK, response)
 }

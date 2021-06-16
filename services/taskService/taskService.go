@@ -99,8 +99,7 @@ func (s *TaskService) GetCompletionPercentage(userId string, dateToString string
 			completed++
 		}
 	}
-	percentage := float64(completed) / float64(len(tasks)) * 100
-	response := dto.CompletionPercentage{Percentage: percentage}
+	response := dto.CompletionPercentage{Done: completed, Total: len(tasks)}
 	return response, nil
 }
 
