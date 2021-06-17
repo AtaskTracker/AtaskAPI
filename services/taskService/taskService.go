@@ -27,11 +27,13 @@ func (s *TaskService) CreateTask(task *dto.Task, userId string) (*dto.Task, erro
 		return nil, err
 	}
 	task.Participants = append(task.Participants, user.Email)
-	url, err := s.googleCloudService.UploadImage(task.UUID.Hex(), task.Photo)
-	if err != nil {
-		return task, err
+	if task.Photo == "" {
+		url, err := s.googleCloudService.UploadImage(task.UUID.Hex(), task.Photo)
+		if err != nil {
+			return task, err
+		}
+		task.Photo = url
 	}
-	task.Photo = url
 	addedTask, err := s.taskRep.CreateTask(*task)
 	if err != nil {
 		return nil, err
