@@ -1,2 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
 go.sum
+*/client_secret.json
+*/.env

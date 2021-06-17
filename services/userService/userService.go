@@ -25,7 +25,7 @@ func New(userRep *userRepo.UserRepo, labelRep *labelRep.LabelRep, redis *redis.C
 }
 
 func (s *UserService) Login(bearer *dto.Bearer) (*dto.User, error) {
-	err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "client_secret.json")
+	err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "secrets/client_secret.json")
 	if err != nil {
 		return nil, err
 	}
